@@ -1,4 +1,8 @@
 1;
+clear;
+clc;
+clf;
+
 %{
   [params,yest,yres,rmserr] = sinefit(data,t,freq,verbose,plot_flag);
   INPUTS :
@@ -21,48 +25,42 @@ t=(0:n-1)*Ts;
 %}
 
 
-%{
-io  : 1 -> input
-    : 0 -> output
 
-id = audiodevinfo (io, rate, bits, chans);
-id = audiodevinfo (io, name);
-
-
-recorder = audiorecorder (fs, nbits, channels, id);
-record (recorder);
-getaudiodata (recorder);
-
-player = audioplayer (y, fs, nbits, id)
-play (player);
-stop (player);
-
-record (sec, fs);
-
-%}
 Fs = 48000;
+order = 3;
+low = 10;
+high = 50000;
 
-df = 0.5;
-N = Fs/df;
+
+a = floor(log10(low));
+b = floor(log10(high));  
+
+df = 1; % df : biggest value < smallest step
+N = high/df
+T = N/Fs; % min observation period
 t = 0:1/Fs:(N-1)/Fs;
 
 sinu = [];
 i = 1;
-for p = 0:1
-  for u = 1:df:9.5
-    f = u*10^p;
-    sinu = [sinu cos(2*pi*f*t)];
-    Freq(i) = f;
+for p = a:b
+for u = 1:df:9.5
+  f = u*10^p;
+    
+  sinu = [sinu cos(2*pi*f*t)];
+      
   endfor
-endfor
+endfor 
 
-time = length(sinu)/Fs;
 
+%recording @ <Fs>Hz sample rate, 8 bits, stereo
+%recorder = audiorecorder (Fs, 16);
+%playing the frequency @ <Fs>Hz sample rate
 player = audioplayer (sinu, Fs);
-play (player);;
-signal = aurecord (time, Fs, 1);
-
-auplot(signal(:,1),Fs);
-title('record')
-xlabel('t (ms)')
-ylabel('A')
+%record the response signal
+play (player);
+%record (recorder);
+%while isplaying(player)
+%endwhile        
+%retrieving the data
+%data = getaudiodata(recorder);     
+%stop(player); 

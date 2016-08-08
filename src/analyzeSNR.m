@@ -1,12 +1,12 @@
 clear;
 clc;
-clf;
+%clf;
 1;
 %------------------------------FUNCTION-------------------------------
 
 function v = rms(spectrum)
-  %compute the RMS in frequency domain
-  v = sum(abs(spectrum))^2/length(spectrum);
+  %computes the RMS in frequency domain
+  v = sum(abs(spectrum).^2)/length(spectrum);
 endfunction
 
 function [fourier, H, THD] = analyze (signal, Fs, fgen, order)
@@ -30,13 +30,15 @@ function [fourier, H, THD] = analyze (signal, Fs, fgen, order)
     endif
   endfor
   
-  fourier(1,:) = f;
-  fourier(2,:) = tfreal;
-
+  % fundamental frequency injected in the system
+  %fund = H(1)*cos(2*pi*fgen*t);
+  % parasite signal created by the system
+  %hn = signal - fund;
+  
   if H(2)!= NaN
     THD(1) = 100*sqrt(sum(H(2:order).^2))/H(1);
-    THD(2) = 100*sqrt(sum(H(2:order).^2))/sqrt(sum(H.^2));
-    THD(3) = (rms(tfreal)-H(1))/(H(1)/sqrt(2));
+    THD(2) = 100*sqrt(sum(H(2:order).^2)/sum(H(1:order).^2));
+    THD(3) = 0; %rms(hn)/rms(fund);
   else THD = [NaN NaN NaN];
   endif
  
@@ -47,10 +49,10 @@ function sweep(Fs,low,high,order,boolPlot)
   a = floor(log10(low));
   b = floor(log10(high));  
   
-  df = 0.5; % df : biggest value < smallest step
-  N = high/df;
+  df = (10^a)/2; % df : biggest value < smallest step
+  N = Fs/df;
   T = N/Fs; % min observation period
-  t = 0:1/Fs:(N-1)/Fs;
+  t = 0:1/Fs:T-(1/Fs);
   
   %recording @ <Fs>Hz sample rate, 8 bits, stereo
   recorder = audiorecorder (Fs, 16);
@@ -67,8 +69,7 @@ function sweep(Fs,low,high,order,boolPlot)
       %record the response signal
       play (player);
       record (recorder);
-      while isplaying(player)        
-      endwhile     
+      sleep(T);     
           
       %retrieving the data
       data = getaudiodata(recorder);    
@@ -89,20 +90,20 @@ function sweep(Fs,low,high,order,boolPlot)
   endfor 
 
   if boolPlot
-    %subplot(211),
+    subplot(211),
       semilogx(r(1,:),r(2,:),'k',r(1,:),r(3,:),'r',r(1,:),r(4,:),'g');
       title('Harmonic Response')
       axis ([low high])
       xlabel('f (Hz)')
       ylabel('dB')
-      legend('Fundametal','1st H','2nd H','Location','Best');
-    %{subplot(212),
+      legend('F_0','F_1','F_2');
+    subplot(212),
       semilogx(r(1,:),r(6,:),'r',r(1,:),r(7,:),'g');
       title('THD')      
       axis ([low high])
       xlabel('f (Hz)')
       ylabel('%')
-    %}
+      legend('THD_R','THD+N');
   endif
 
   stop(player);
@@ -112,8 +113,8 @@ endfunction
 
 %------------------------------SCRIPT---------------------------------
 
-Fs = 96000;
-order = 3;
+Fs = 48000;
+order = 4;
 low = 10;
 high = 20000;
 

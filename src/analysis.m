@@ -1,10 +1,4 @@
-clear;
-clc;
-clf;
-1;
-
-%------------------------------FUNCTION-------------------------------
-
+%----------------------------------ANALYSIS.M-----------------------------------
 function v = rms(signal)
 	%computes the RMS in time domain
 	v = norm(signal)/sqrt(length(signal));
@@ -36,7 +30,7 @@ function [fourier, H, THD, SNR] = analyze(signal, Fs, fgen, order)
 	fund = (H(1)*cos(2*pi*fgen*t))';
 	% parasite signal created by the system (harmonics + noise)
 	hn = signal - fund;
-  
+	
 	if H(2)!= NaN
 		%THD(1) = 100*sqrt(sum(H(2:order).^2))/H(1); %THD_F
 		THD = 100*sqrt(sum(H(2:order).^2)/sum(H(1:order).^2)); %THD_R
@@ -48,11 +42,34 @@ function [fourier, H, THD, SNR] = analyze(signal, Fs, fgen, order)
 	
 endfunction
 
-function sweep(Fs,low,high,order,boolPlot)
-  
+function sweep(low,high,order,boolPlot)
+	
+	%assertion
+	if nargin < 1
+		low = 10;
+		high = 30000;
+		order = 2;
+		boolPlot = 1;
+	elseif nargin < 3
+		order = 2;
+		boolPlot = 1;
+	elseif nargin < 4
+		boolPlot = 1;
+	else exit;
+	endif
+	if low>high
+		tmp = low;
+		low = high;
+		high = tmp;
+	endif
+	low = max(low,10);
+	high = min(high,30000);
+	order = min(max(order,1),4);
+	
 	a = floor(log10(low));
 	b = floor(log10(high));
 	
+	Fs = order*high;
 	df = (10^a)/2; % df : biggest value < smallest step
 	N = Fs/df; %number of samples
 	T = (N+1)/Fs; % min observation period
@@ -60,7 +77,7 @@ function sweep(Fs,low,high,order,boolPlot)
 
 	%recording @ <Fs>Hz sample rate, 16 bits, mono
 	recorder = audiorecorder (Fs, 16, 1);
-  
+	
 	i = 1;
 	for p = a:b
 		for u = 1:0.5:9.5
@@ -84,26 +101,24 @@ function sweep(Fs,low,high,order,boolPlot)
 			
 			%computing the data
 			r(1,i) = f;
-			r(2,i) = 20*log10(H(1));
-			r(3,i) = 20*log10(H(2));
-			r(4,i) = 20*log10(H(3));
-			r(5,i) = THD;
-			r(6,i) = SNR;
+			r(2:order+1,i) = 20*log10(H(1:order));
+			r(order+2,i) = THD;
+			r(order+3,i) = SNR;
 			i++;      
 		endfor
 	endfor 
-  
+	
 	if boolPlot
 		subplot(211),
-			semilogx(r(1,:),r(2,:),'k',r(1,:),r(3,:),'r',r(1,:),r(4,:),'g');
+			semilogx(r(1,:),r(2:order+1,:));
 			title('Harmonic Response')
 			xlabel('f (Hz)')
 			ylabel('dB')
-			legend('F_0','F_1','F_2')
+			legend('F_0','F_1','F_2','F_3')
 			grid on
 			axis ([low high]);
 		subplot(212),
-			w = plotyy (r(1,:), r(5,:), r(1,:), r(6,:), @semilogx);
+			w = plotyy (r(1,:), r(order+2,:), r(1,:), r(order+3,:), @semilogx);
 			title('Distortion measures') 
 			xlabel('f (Hz)')
 			ylabel(w(1),'%')
@@ -113,16 +128,8 @@ function sweep(Fs,low,high,order,boolPlot)
 			axis (w(1), [low high 0 100])
 			axis (w(2), [low high]);
 	endif
-  
+	
 	stop(player);
 	stop(recorder);
 endfunction
-
-%------------------------------SCRIPT---------------------------------
-
-Fs = 96000;
-order = 4;
-low = 10;
-high = 20000;
-
-sweep(Fs,low,high,order,1);
+%--------------------------------------EOF--------------------------------------

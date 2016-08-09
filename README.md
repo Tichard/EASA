@@ -4,12 +4,13 @@ Electrical Audio Spectrum Analyzer
 Measures your speakers and display the response using Octave GNU software.
 
 FEATURES :
+- From 10Hz to 30kHz spectrum analysis
 - Frequency response up to the 4th harmonic
-- computing THD and SNR
+- Computing THD and SNR
 - Frequency sweep analysing with spectrum display
 - Optimized analysis algorithm
-- 96kHz sampling frequency
-- analysis time <1min
+- Auto-adjusted sampling frequency
+- Analysis time <1min
 
 USER MANUAL :
 

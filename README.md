@@ -1,7 +1,7 @@
 # EASA
 Electrical Audio Spectrum Analyzer
 
-Measures your speakers and display the responseu sing Octave GNU software.
+Measures your speakers and display the response using Octave GNU software.
 
 FEATURES :
 - Frequency response up to the 4th harmonic

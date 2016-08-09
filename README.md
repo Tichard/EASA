@@ -13,6 +13,7 @@ FEATURES :
 - analysis time <1min
 
 USER MANUAL :
+
 1 - Connect a microphone and the speakers to test to your computer
 
 2 - Place the microphone in front of the speakers (@~1m)

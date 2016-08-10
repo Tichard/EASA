@@ -17,8 +17,8 @@ function sweep(low,high,order,boolPlot)
 	
 	%assertion
 	if nargin < 1
-		low = 10;
-		high = 30000;
+		low = 20;
+		high = 20000;
 		order = 2;
 		boolPlot = 1;
 	elseif nargin < 3
@@ -41,9 +41,9 @@ function sweep(low,high,order,boolPlot)
 	a = floor(log10(low));
 	b = floor(log10(high));
 	
-	Fmax = 2*order*(10^(b+1));
+	Fmax = order*(10^(b+1));
 	
-	Fs = min(max(Fmax,1000),192000) %sampling rate (1kHz<Fs<192kHz)
+	Fs = min(max(2*Fmax,1000),192000) %sampling rate (1kHz<Fs<192kHz)
 	df = (10^a)/2; % df : biggest value < smallest step
 	N = ceil(Fs/df) %number of samples
 	T = N/Fs; % min observation period
@@ -70,7 +70,6 @@ function sweep(low,high,order,boolPlot)
 			%retrieving the data
 			data = getaudiodata(recorder);    
 			stop(player);
-			length(data)
 			
 			signal = data(end-N:end-1); %extract the response signal
 			[fourier, H, THD, SNR] = analyze(signal, Fs, f, order);
@@ -99,7 +98,7 @@ function sweep(low,high,order,boolPlot)
 			xlabel('f (Hz)')
 			ylabel(w(1),'%')
 			ylabel(w(2),'dB')
-			legend('THD_R','SNR_d_B')
+			legend('THD+N','SNR_d_B')
 			grid on
 			axis (w(1), [low high 0 100])
 			axis (w(2), [low high]);

@@ -39,9 +39,9 @@ function [fourier, H, THD, SNR] = analyze(signal, Fs, fgen, order)
 	% parasite signal created by the system (harmonics + noise)
 	hn = signal - fund;
 	
-	%THD(1) = 100*sqrt(sum(H(2:order).^2))/H(1); %THD_F
-	THD = 100*sqrt(sum(H(2:order).^2)/sum(H(1:order).^2)); %THD_R
-	%THD(3) = rms(hn)/rms(fund); %THD+N
+	%THD = 100*sqrt(sum(H(2:order).^2))/H(1); %THD_F
+	%THD = 100*sqrt(sum(H(2:order).^2)/sum(H(1:order).^2)); %THD_R
+	THD = rms(hn)/rms(fund); %THD+N
 		
 	SNR = 20*log10(rms(fund)/rms(hn)); %SNR to dB
 	

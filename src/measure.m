@@ -20,20 +20,21 @@ function measure(f, order)
 	%else exit;
 	endif
 	
+	f = min(max(f,10),30000);
 	order = min(max(order,1),4);
 	
-	Fmax = 4*order*f;
+	Fmax = 2*order*f;
 	
-	Fs = min(max(Fmax,1000),192000) %sampling rate (1kHz<Fs<192kHz)
-	df = f/2; % df : biggest value < smallest step
+	Fs = min(max(2*Fmax,1000),192000); %sampling rate (1kHz<Fs<192kHz)
+	df = f/50; % df : 20pts per harmonic
 	N = ceil(Fs/df); %number of samples
-	T = N/Fs; % min observation period
+	T = min(2*max(N/Fs,0.5),6); % min observation period
 
 	%recording @ <Fs>Hz sample rate, 16 bits, mono
 	recorder = audiorecorder (Fs, 16, 1);
 
 	record (recorder);
-	sleep(1);
+	sleep(T);
 
 	%retrieving the data
 	data = getaudiodata(recorder);    
@@ -42,9 +43,13 @@ function measure(f, order)
 	signal = data(end-N:end-1); %extract the response signal
 	[fourier, H, THD, SNR] = analyze(signal, Fs, f, order);
 	
-	plot(fourier(1,:),fourier(2,:));
-	printf('F_0 : %d dB\n\rF_1 : %d dB\n\rF_2 : %d dB\n\rTHD : %d %%\n\rSNR : %d dB\n\r',
-			H(1),H(2),H(3),THD,SNR);
+	plot(fourier(1,2:end),(fourier(2,2:end)));
+		title('FFT')
+		xlabel('f (Hz)')
+		ylabel('|S(f)|')
+		axis ([10 (order+1)*f]);
+	printf('F_0 : %d dB_rel\n\rF_1 : %d dB_rel\n\rF_2 : %d dB_rel\n\rTHD+N : %d %%\n\rSNR : %d dB\n\r',
+			20*log10(H(1)/H(1)),20*log10(H(2)/H(1)),20*log10(H(3)/H(1)),THD,SNR);
 
 endfunction
 %--------------------------------------EOF--------------------------------------

@@ -1,7 +1,7 @@
 # EASA
 Electrical Audio Spectrum Analyzer
 
-Measures your speakers and display the response using Octave GNU software.
+Measures a speaker and display the spectrum analysis as the harmonic frequency response and several distortion rates using Octave GNU software.
 
 FEATURES :
 - From 10Hz to 30kHz spectrum analysis
@@ -20,7 +20,7 @@ USER MANUAL :
 
 3 - Set your speakers volume to the 3/4
 
-4 - Run "analysis.m" with Octave GNU software
+4 - Run the software with Octave GNU software
 
 5 - Observe the response
 

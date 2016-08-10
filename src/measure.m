@@ -48,8 +48,11 @@ function measure(f, order)
 		xlabel('f (Hz)')
 		ylabel('|S(f)|')
 		axis ([10 (order+1)*f]);
-	printf('F_0 : %d dB_rel\n\rF_1 : %d dB_rel\n\rF_2 : %d dB_rel\n\rTHD+N : %d %%\n\rSNR : %d dB\n\r',
-			20*log10(H(1)/H(1)),20*log10(H(2)/H(1)),20*log10(H(3)/H(1)),THD,SNR);
+		
+	for i = 1:order
+		printf('F_%u (%u Hz): %d dB_rel\n\r',i-1,i*f,20*log10(H(i)/H(1)));
+	endfor
+	printf('THD+N : %d %%\n\rSNR : %d dB\n\r',THD,SNR);
 
 endfunction
 %--------------------------------------EOF--------------------------------------

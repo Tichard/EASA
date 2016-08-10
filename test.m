@@ -20,7 +20,7 @@ addpath ("./src");
 
 %-----------------------------------FUNCTION------------------------------------
 
-function test_measure(f)
+function test_measure(f,n)
 	
 	Fs = 44100;
 	T = 3;
@@ -30,7 +30,7 @@ function test_measure(f)
 	player = audioplayer (sinu, Fs);
 	play (player);
 	
-	measure(f);
+	measure(f,n);
 	
 	stop (player);
 endfunction
@@ -42,7 +42,7 @@ clear;
 clc;
 %clf;
 
-sweep(10,30000,3);
-%test_measure(400);
+%sweep(10,30000,3);
+test_measure(400,4);
 
 %--------------------------------------EOF--------------------------------------

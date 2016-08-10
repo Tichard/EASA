@@ -18,9 +18,9 @@ USER MANUAL :
 
 2 - Place the microphone in front of the speakers (@~1m)
 
-3 - Set your speakers volume to the 3/4
+3 - Set your speakers volume
 
-4 - Run the software with Octave GNU software
+4 - Run the software with Octave GNU
 
 5 - Observe the response
 

@@ -101,7 +101,7 @@ function sweep(low,high,order,boolPlot)
 			legend('THD+N','SNR_d_B')
 			grid on
 			axis (w(1), [low high 0 100])
-			axis (w(2), [low high]);
+			axis (w(2), [low high -60 10]);
 	endif
 	
 	stop(player);

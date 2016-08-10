@@ -1,46 +1,17 @@
-%----------------------------------ANALYSIS.M-----------------------------------
-function v = rms(signal)
-	%computes the RMS in time domain
-	v = norm(signal)/sqrt(length(signal));
-endfunction
+%------------------------------------SWEEP.M------------------------------------
 
-function [fourier, H, THD, SNR] = analyze(signal, Fs, fgen, order)
-	N = length(signal); %number of samples
-	t = 0:1/Fs:(N-1)/Fs; %time vector
-	f = (0:N/2-1)*Fs/N; %frequency vector
-	
-	tf = 2*abs(fft(signal)/N); %fft in complex domain
-	tfreal = tf(1:N/2); %fft in real domain
-	
-	H = zeros(1,order);	
-	for o = 1:order  %for all harmonics
-		index = ceil(o*fgen*N/Fs); %index of the frequency
-		if index < 3
-		H(o) = max(tfreal(index:index+2));
-		elseif index < N/2
-		H(o) = max(tfreal(index-2:index+2));
-		else H(o) = NaN;
-		endif
-	endfor
-	
-	fourier(1,:) = f;
-	fourier(2,:) = tfreal;
-	
-	% fundamental frequency injected in the system
-	fund = (H(1)*cos(2*pi*fgen*t))';
-	% parasite signal created by the system (harmonics + noise)
-	hn = signal - fund;
-	
-	if H(2)!= NaN
-		%THD(1) = 100*sqrt(sum(H(2:order).^2))/H(1); %THD_F
-		THD = 100*sqrt(sum(H(2:order).^2)/sum(H(1:order).^2)); %THD_R
-		%THD(3) = rms(hn)/rms(fund); %THD+N
-	else THD = NaN;
-	endif
-	
-	SNR = 20*log10(rms(fund)/rms(hn)); %SNR to dB
-	
-endfunction
+%{
+	> [File Name] sweep.m
+	> [Platform] Octave GNU
+	> [Version] 1.00
+	> [Author] Richard
+	> [Date] 10/08/2016
+	> [Language] .m file
+	> [Description] Generates a stepped frequency sweep and computes 
+	> the harmonic response and several distortion rates calling "analyse.m"
+	> function
+%}
+
 
 function sweep(low,high,order,boolPlot)
 	
@@ -55,8 +26,9 @@ function sweep(low,high,order,boolPlot)
 		boolPlot = 1;
 	elseif nargin < 4
 		boolPlot = 1;
-	else exit;
+	%else exit;	
 	endif
+	
 	if low>high
 		tmp = low;
 		low = high;
@@ -69,10 +41,12 @@ function sweep(low,high,order,boolPlot)
 	a = floor(log10(low));
 	b = floor(log10(high));
 	
-	Fs = order*high;
+	Fmax = 2*order*(10^(b+1));
+	
+	Fs = min(max(Fmax,1000),192000) %sampling rate (1kHz<Fs<192kHz)
 	df = (10^a)/2; % df : biggest value < smallest step
-	N = Fs/df; %number of samples
-	T = (N+1)/Fs; % min observation period
+	N = ceil(Fs/df) %number of samples
+	T = N/Fs; % min observation period
 	t = 0:1/Fs:2*T-(1/Fs); %time vector
 
 	%recording @ <Fs>Hz sample rate, 16 bits, mono
@@ -86,8 +60,9 @@ function sweep(low,high,order,boolPlot)
 			
 			%playing the frequency @ <Fs>Hz sample rate
 			player = audioplayer (sinu, Fs);
-			%record the response signal
 			play (player);
+			
+			%record the response signal
 			record (recorder);
 			while isplaying(player)
 			endwhile
@@ -95,6 +70,7 @@ function sweep(low,high,order,boolPlot)
 			%retrieving the data
 			data = getaudiodata(recorder);    
 			stop(player);
+			length(data)
 			
 			signal = data(end-N:end-1); %extract the response signal
 			[fourier, H, THD, SNR] = analyze(signal, Fs, f, order);

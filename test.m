@@ -3,7 +3,7 @@
 %{
 	> [File Name] test.m
 	> [Platform] Octave GNU
-	> [Version] 1.00
+	> [Version] alpha
 	> [Author] Richard
 	> [Date] 10/08/2016
 	> [Language] .m file
@@ -12,8 +12,9 @@
 
 
 %-----------------------------------INCLUDES------------------------------------
-%load the audio package (player/recorder)
-pkg load audio;
+%load packages 
+pkg load audio; %(player/recorder)
+pkg load signal; %not used for now
 
 %load the implemented functions
 addpath ("./src");
@@ -22,27 +23,27 @@ addpath ("./src");
 
 function test_measure(f,n)
 	
-	Fs = 44100;
-	T = 3;
+	Fs = 48000;
+	T = 7;
 	t = 0:1/Fs:T-(1/Fs); %time vector
-	sinu = cos(2*pi*f*t);
+	sinu = sin(2*pi*f*t);
 	
 	player = audioplayer (sinu, Fs);
 	play (player);
 	
-	measure(f,n);
+	measure(f,n,1);
 	
 	stop (player);
 endfunction
 
 %------------------------------------SCRIPT-------------------------------------
+clear; %clear workspace
+clc; %clear command shell
 
-%clear all
-clear;
-clc;
-%clf;
+%test the sweep function
+%sweep(5,40000,3);
 
-%sweep(10,30000,3);
-test_measure(400,4);
+%test the measure function
+test_measure(80,3);
 
 %--------------------------------------EOF--------------------------------------

@@ -3,7 +3,7 @@
 %{
 	> [File Name] analyze.m
 	> [Platform] Octave GNU
-	> [Version] 1.00
+	> [Version] alpha
 	> [Author] Richard
 	> [Date] 10/08/2016
 	> [Language] .m file
@@ -17,39 +17,43 @@ function [fourier, H, THD, SNR] = analyze(signal, Fs, fgen, order)
 	t = 0:1/Fs:(N-1)/Fs; %time vector
 	f = (0:N/2-1)*Fs/N; %frequency vector
 	
-	tf = 2*abs(fft(signal)/N); %fft in complex domain
-	tfreal = tf(1:N/2); %fft in real domain
+	Sc = abs(fft(signal)/N); %fft in complex domain
+	S = 2*Sc(1:N/2); %fft in real domain
 	
 	H = zeros(1,order);	
 	for o = 1:order  %for all harmonics
 		index = ceil(o*fgen*N/Fs); %index of the frequency
-		if index < 3
-		H(o) = max(tfreal(index:index+2));
-		elseif index+2 < N/2
-		H(o) = max(tfreal(index-2:index+2));
-		else H(o) = 0.001;
+		if index+1 < N/2
+			H(o) = max(S(index:index+1));
+		else H(o) = 0.0001; % set to -80dB
 		endif
 	endfor
 	
 	fourier(1,:) = f;
-	fourier(2,:) = tfreal;
+	fourier(2,:) = S;
 	
 	% fundamental frequency injected in the system
-	fund = (H(1)*cos(2*pi*fgen*t))';
-	% parasite signal created by the system (harmonics + noise)
-	hn = signal - fund;
+	f0 = H(1)*sin(2*pi*fgen*t)';
+	F0c = 2*abs(fft(f0)/N); %fft in complex domain
+	F0 = F0c(1:N/2); %fft in real domain
 	
+	% parasite signal created by the system (harmonics + noise)
+	HN = S - F0; %fft in real domain
+	
+	% Choose the THD wanted :
 	%THD = 100*sqrt(sum(H(2:order).^2))/H(1); %THD_F
 	%THD = 100*sqrt(sum(H(2:order).^2)/sum(H(1:order).^2)); %THD_R
-	THD = rms(hn)/rms(fund); %THD+N
+	THD = 100*rms(HN)/rms(F0); %THD+N
 		
-	SNR = 20*log10(rms(fund)/rms(hn)); %SNR to dB
+	SNR = 20*log10(rms(F0)/rms(HN)); %SNR to dB
 	
 endfunction
 
-function v = rms(signal)
-	%computes the RMS in time domain
-	v = norm(signal)/sqrt(length(signal));
+
+function v = rms(S)
+	%computes the RMS in real frequency domain
+	 v = sqrt(sum(S.^2)/2);
 endfunction
+
 
 %--------------------------------------EOF--------------------------------------

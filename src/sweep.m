@@ -3,7 +3,7 @@
 %{
 	> [File Name] sweep.m
 	> [Platform] Octave GNU
-	> [Version] 1.00
+	> [Version] alpha
 	> [Author] Richard
 	> [Date] 10/08/2016
 	> [Language] .m file
@@ -43,11 +43,11 @@ function sweep(low,high,order,boolPlot)
 	
 	Fmax = order*(10^(b+1));
 	
-	Fs = min(max(2*Fmax,1000),192000) %sampling rate (1kHz<Fs<192kHz)
+	Fs = min(max(2*Fmax,1000),192000); %sampling rate (1kHz<Fs<192kHz)
 	df = (10^a)/2; % df : biggest value < smallest step
-	N = ceil(Fs/df) %number of samples
-	T = N/Fs; % min observation period
-	t = 0:1/Fs:2*T-(1/Fs); %time vector
+	N = ceil(Fs/df); %number of samples
+	T = min(2*max(N/Fs,0.2),6); % min observation period
+	t = 0:1/Fs:T-(1/Fs); %time vector
 
 	%recording @ <Fs>Hz sample rate, 16 bits, mono
 	recorder = audiorecorder (Fs, 16, 1);
@@ -56,7 +56,7 @@ function sweep(low,high,order,boolPlot)
 	for p = a:b
 		for u = 1:0.5:9.5
 			f = u*10^p;
-			sinu = cos(2*pi*f*t);
+			sinu = sin(2*pi*f*t);
 			
 			%playing the frequency @ <Fs>Hz sample rate
 			player = audioplayer (sinu, Fs);
@@ -71,7 +71,8 @@ function sweep(low,high,order,boolPlot)
 			data = getaudiodata(recorder);    
 			stop(player);
 			
-			signal = data(end-N:end-1); %extract the response signal
+			%extract the response signal
+			signal = data(end-N:end-1); %if wanted, use a window here
 			[fourier, H, THD, SNR] = analyze(signal, Fs, f, order);
 			
 			%computing the data
@@ -84,24 +85,25 @@ function sweep(low,high,order,boolPlot)
 	endfor 
 	
 	if boolPlot
-		subplot(211),
+		clf;  %clear previous plots
+		subplot(211,'align'),
 			semilogx(r(1,:),r(2:order+1,:));
 			title('Harmonic Response')
 			xlabel('f (Hz)')
 			ylabel('dB')
-			legend('F_0','F_1','F_2','F_3')
+			legend('F_0','F_1','F_2','F_3','location','southoutside')
 			grid on
-			axis ([low high]);
-		subplot(212),
+			axis ([low high -70 10]);
+		subplot(212,'align'),
 			w = plotyy (r(1,:), r(order+2,:), r(1,:), r(order+3,:), @semilogx);
 			title('Distortion measures') 
 			xlabel('f (Hz)')
 			ylabel(w(1),'%')
 			ylabel(w(2),'dB')
-			legend('THD+N','SNR_d_B')
+			legend('THD+N','SNR_d_B','location','southoutside')
 			grid on
-			axis (w(1), [low high 0 100])
-			axis (w(2), [low high -60 10]);
+			axis (w(1), [low high 0 10])
+			axis (w(2), [low high 0 120]);
 	endif
 	
 	stop(player);

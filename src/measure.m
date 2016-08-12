@@ -12,11 +12,11 @@
 %}
 
 
-function measure(f, order,boolPlot)
+function measure(f, n, boolPlot)
 	
 	%assertion
 	if nargin < 2
-		order = 3;
+		n = 0;
 		boolPlot = 0;
 	elseif nargin < 3	
 		boolPlot = 0;
@@ -24,16 +24,16 @@ function measure(f, order,boolPlot)
 	endif
 	
 	f = min(max(f,10),30000);
-	order = min(max(order,1),4);
+	order = min(max(n+1,1),4);
 	
-	Fmax = 2*order*f; % x2 because I can...
+	Fmax = order*f;
 	
-	Fs = min(max(2*Fmax,1000),192000); %sampling rate (1kHz<Fs<192kHz)
-	df = f/50; % df : 20pts per harmonic
+	Fs = 192000; %sampling rate (48kHz<Fs<192kHz)
+	df = 1; % df : 10 000 pts per harmonic
 	N = ceil(Fs/df); %number of samples
-	T = min(2*max(N/Fs,0.2),6); % min observation period
-
-	%recording @ <Fs>Hz sample rate, 16 bits, mono
+	T = 2;
+	
+	%recording @ <Fs>Hz sampling rate, 16 bits, mono
 	recorder = audiorecorder (Fs, 16, 1);
 
 	record (recorder);
@@ -44,23 +44,24 @@ function measure(f, order,boolPlot)
 	stop(recorder);
 
 	%extract the response signal
-	signal = data(end-N:end-1); %if wanted, use a window here
+	signal = data(end-N:end-1);%.* blackmanharris(N); %Blackman-Harris window
+	
 	[fourier, H, THD, SNR] = analyze(signal, Fs, f, order);
 	
 	if boolPlot
 		clf; %clear previous plots
-		plot(fourier(1,2:end),(fourier(2,2:end)));
+		plot(fourier(1,:),fourier(2,:),fourier(1,:),1000*fourier(3,:));
 			title('FFT')
 			xlabel('f (Hz)')
 			ylabel('|S(f)|')
-			axis ([10 (order+1)*f]);
+			axis ([0 (order+1)*f]);
 	endif
 	
-	printf('Fundamental (%u Hz): %d dB\n\r',f,20*log10(H(1)));
+	printf('Fundamental (%u Hz): %d dBV\n\r',f,20*log10(H(1)));
 	for i = 2:order
-		printf('F_%u (%u Hz): %d dB\n\r',i-1,i*f,20*log10(H(i)));
+		printf('Harmonic %u (%u Hz): %d dBV\n\r',i-1,i*f,20*log10(H(i)));
 	endfor
-	printf('THD+N : %d %%\n\rSNR : %d dB\n\r',THD,SNR);
+	printf('THD+N : %d %%\n\rSNR : %d dBV\n\r',THD,SNR);
 
 endfunction
 %--------------------------------------EOF--------------------------------------

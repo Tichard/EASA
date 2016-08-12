@@ -13,16 +13,16 @@
 %}
 
 
-function sweep(low,high,order,boolPlot)
+function sweep(low,high,n,boolPlot)
 	
 	%assertion
 	if nargin < 1
 		low = 20;
 		high = 20000;
-		order = 2;
+		n = 0;
 		boolPlot = 1;
 	elseif nargin < 3
-		order = 2;
+		n = 0;
 		boolPlot = 1;
 	elseif nargin < 4
 		boolPlot = 1;
@@ -36,20 +36,20 @@ function sweep(low,high,order,boolPlot)
 	endif
 	low = max(low,10);
 	high = min(high,30000);
-	order = min(max(order,1),4);
+	order = min(max(n+1,1),4);
 	
 	a = floor(log10(low));
 	b = floor(log10(high));
 	
 	Fmax = order*(10^(b+1));
 	
-	Fs = min(max(2*Fmax,1000),192000); %sampling rate (1kHz<Fs<192kHz)
-	df = (10^a)/2; % df : biggest value < smallest step
+	Fs = 192000; %sampling rate
+	df = 1; % df < smallest step
 	N = ceil(Fs/df); %number of samples
-	T = min(2*max(N/Fs,0.2),6); % min observation period
+	T = 1;
 	t = 0:1/Fs:T-(1/Fs); %time vector
 
-	%recording @ <Fs>Hz sample rate, 16 bits, mono
+	%recording @ <Fs>Hz sampling rate, 16 bits, mono
 	recorder = audiorecorder (Fs, 16, 1);
 	
 	i = 1;
@@ -72,7 +72,7 @@ function sweep(low,high,order,boolPlot)
 			stop(player);
 			
 			%extract the response signal
-			signal = data(end-N:end-1); %if wanted, use a window here
+			signal = data(end-N:end-1);%.* blackmanharris(N); %Blackman-Harris window
 			[fourier, H, THD, SNR] = analyze(signal, Fs, f, order);
 			
 			%computing the data
@@ -86,24 +86,24 @@ function sweep(low,high,order,boolPlot)
 	
 	if boolPlot
 		clf;  %clear previous plots
-		subplot(211,'align'),
+		subplot(211),
 			semilogx(r(1,:),r(2:order+1,:));
-			title('Harmonic Response')
-			xlabel('f (Hz)')
-			ylabel('dB')
-			legend('F_0','F_1','F_2','F_3','location','southoutside')
-			grid on
-			axis ([low high -70 10]);
-		subplot(212,'align'),
+			title('Harmonic Response');
+			xlabel('f (Hz)');
+			ylabel('dBV');
+			legend('F_0','F_1','F_2','F_3','location','southoutside','orientation','horizontal');
+			grid on;
+			axis ([low high -100 10]);
+		subplot(212),
 			w = plotyy (r(1,:), r(order+2,:), r(1,:), r(order+3,:), @semilogx);
-			title('Distortion measures') 
-			xlabel('f (Hz)')
-			ylabel(w(1),'%')
-			ylabel(w(2),'dB')
-			legend('THD+N','SNR_d_B','location','southoutside')
+			title('Distortion measures');
+			xlabel('f (Hz)');
+			ylabel(w(1),'%');
+			ylabel(w(2),'dBV');
+			legend('THD+N (%)','SNR (dBV)','location','southoutside','orientation','horizontal');
 			grid on
-			axis (w(1), [low high 0 10])
-			axis (w(2), [low high 0 120]);
+			axis (w(1), [low high 0 max(r(order+2,1:find(r(1,:)==high)-1))])
+			axis (w(2), [low high])
 	endif
 	
 	stop(player);

@@ -25,27 +25,26 @@ function [fourier, H, THD, SNR] = analyze(signal, Fs, fgen, order)
 		index = ceil(o*fgen*N/Fs); %index of the frequency
 		if index+1 < N/2
 			H(o) = max(S(index:index+1));
-		else H(o) = 0.0001; % set to -80dB
 		endif
 	endfor
 	
+	% parasite signal created by the system (harmonics + noise)
+	HN = S;
+	i = ceil((fgen*N/Fs));
+	HN(i:i+2) = 0; %excluding fundamental bin
+	HN(1:2) = 0; %excluding potentialy VLF and DC bin
+	
+	
 	fourier(1,:) = f;
 	fourier(2,:) = S;
-	
-	% fundamental frequency injected in the system
-	f0 = H(1)*sin(2*pi*fgen*t)';
-	F0c = 2*abs(fft(f0)/N); %fft in complex domain
-	F0 = F0c(1:N/2); %fft in real domain
-	
-	% parasite signal created by the system (harmonics + noise)
-	HN = S - F0; %fft in real domain
+	fourier(3,:) = HN;
 	
 	% Choose the THD wanted :
 	%THD = 100*sqrt(sum(H(2:order).^2))/H(1); %THD_F
 	%THD = 100*sqrt(sum(H(2:order).^2)/sum(H(1:order).^2)); %THD_R
-	THD = 100*rms(HN)/rms(F0); %THD+N
-		
-	SNR = 20*log10(rms(F0)/rms(HN)); %SNR to dB
+	THD = 100*rms(HN)/rms(S); %THD+N
+	
+	SNR = 20*log10(rms(S)/rms(HN)); %SNR to dBV
 	
 endfunction
 

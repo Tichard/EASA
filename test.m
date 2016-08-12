@@ -13,8 +13,8 @@
 
 %-----------------------------------INCLUDES------------------------------------
 %load packages 
-pkg load audio; %(player/recorder)
-pkg load signal; %not used for now
+pkg load audio; %player/recorder
+pkg load signal; %Blackman-Harris windows
 
 %load the implemented functions
 addpath ("./src");
@@ -24,7 +24,7 @@ addpath ("./src");
 function test_measure(f,n)
 	
 	Fs = 48000;
-	T = 7;
+	T = 20;
 	t = 0:1/Fs:T-(1/Fs); %time vector
 	sinu = sin(2*pi*f*t);
 	
@@ -41,9 +41,9 @@ clear; %clear workspace
 clc; %clear command shell
 
 %test the sweep function
-%sweep(5,40000,3);
+sweep(10,20000,3);
 
 %test the measure function
-test_measure(80,3);
+%test_measure(10000,2);
 
 %--------------------------------------EOF--------------------------------------

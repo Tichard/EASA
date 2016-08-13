@@ -44,10 +44,10 @@ function sweep(low,high,n,boolPlot)
 	Fmax = order*(10^(b+1));
 	
 	Fs = 192000; %sampling rate
-	df = 1; % df < smallest step
+	df = 10^a/5; % df < smallest step
 	N = ceil(Fs/df); %number of samples
-	T = 1;
-	t = 0:1/Fs:T-(1/Fs); %time vector
+	T = 2/df;
+	t = 0:1/Fs:2*T-(1/Fs); %time vector
 
 	%recording @ <Fs>Hz sampling rate, 16 bits, mono
 	recorder = audiorecorder (Fs, 16, 1);
@@ -64,8 +64,7 @@ function sweep(low,high,n,boolPlot)
 			
 			%record the response signal
 			record (recorder);
-			while isplaying(player)
-			endwhile
+			sleep(T);
 			
 			%retrieving the data
 			data = getaudiodata(recorder);    
@@ -109,4 +108,5 @@ function sweep(low,high,n,boolPlot)
 	stop(player);
 	stop(recorder);
 endfunction
+
 %--------------------------------------EOF--------------------------------------

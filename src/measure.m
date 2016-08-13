@@ -29,9 +29,9 @@ function measure(f, n, boolPlot)
 	Fmax = order*f;
 	
 	Fs = 192000; %sampling rate (48kHz<Fs<192kHz)
-	df = 1; % df : 10 000 pts per harmonic
+	df = 1; % 1Hz precision
 	N = ceil(Fs/df); %number of samples
-	T = 2;
+	T = 2/df;
 	
 	%recording @ <Fs>Hz sampling rate, 16 bits, mono
 	recorder = audiorecorder (Fs, 16, 1);
@@ -50,7 +50,7 @@ function measure(f, n, boolPlot)
 	
 	if boolPlot
 		clf; %clear previous plots
-		plot(fourier(1,:),fourier(2,:),fourier(1,:),1000*fourier(3,:));
+		plot(fourier(1,:),fourier(2,:),fourier(1,:),fourier(3,:));
 			title('FFT')
 			xlabel('f (Hz)')
 			ylabel('|S(f)|')
@@ -64,4 +64,5 @@ function measure(f, n, boolPlot)
 	printf('THD+N : %d %%\n\rSNR : %d dBV\n\r',THD,SNR);
 
 endfunction
+
 %--------------------------------------EOF--------------------------------------

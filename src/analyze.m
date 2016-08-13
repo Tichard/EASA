@@ -31,7 +31,7 @@ function [fourier, H, THD, SNR] = analyze(signal, Fs, fgen, order)
 	% parasite signal created by the system (harmonics + noise)
 	HN = S;
 	i = ceil((fgen*N/Fs));
-	HN(i:i+2) = 0; %excluding fundamental bin
+	HN(i:i+1) = 0; %excluding fundamental bin
 	HN(1:2) = 0; %excluding potentialy VLF and DC bin
 	
 	
@@ -53,6 +53,5 @@ function v = rms(S)
 	%computes the RMS in real frequency domain
 	 v = sqrt(sum(S.^2)/2);
 endfunction
-
 
 %--------------------------------------EOF--------------------------------------

@@ -5,7 +5,7 @@
 	> [Platform] Octave GNU
 	> [Version] alpha
 	> [Author] Richard
-	> [Date] 10/08/2016
+	> [Date] 15/08/2016
 	> [Language] .m file
 	> [Description] Records and computes the harmonic response and several
 	> distortion rates to a given frequency calling "analyse.m" function

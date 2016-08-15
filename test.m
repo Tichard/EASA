@@ -5,7 +5,7 @@
 	> [Platform] Octave GNU
 	> [Version] alpha
 	> [Author] Richard
-	> [Date] 10/08/2016
+	> [Date] 15/08/2016
 	> [Language] .m file
 	> [Description] Tests function file
 %}

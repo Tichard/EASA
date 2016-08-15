@@ -5,7 +5,7 @@
 	> [Platform] Octave GNU
 	> [Version] alpha
 	> [Author] Richard
-	> [Date] 10/08/2016
+	> [Date] 15/08/2016
 	> [Language] .m file
 	> [Description] Generates a stepped frequency sweep and computes 
 	> the harmonic response and several distortion rates calling "analyse.m"

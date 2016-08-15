@@ -5,7 +5,7 @@
 	> [Platform] Octave GNU
 	> [Version] alpha
 	> [Author] Richard
-	> [Date] 10/08/2016
+	> [Date] 15/08/2016
 	> [Language] .m file
 	> [Description] Computes the harmonic response and several distortion rates 
 	> from a response signal to a 'fgen' Hz sinewave sampled at 'Fs' Hz

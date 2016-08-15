@@ -50,7 +50,7 @@ function measure(f, n, boolPlot)
 	
 	if boolPlot
 		clf; %clear previous plots
-		plot(fourier(1,:),fourier(2,:),fourier(1,:),fourier(3,:));
+		plot(fourier(1,:),fourier(2,:));
 			title('FFT')
 			xlabel('f (Hz)')
 			ylabel('|S(f)|')

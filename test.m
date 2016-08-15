@@ -41,9 +41,9 @@ clear; %clear workspace
 clc; %clear command shell
 
 %test the sweep function
-sweep(10,20000,1);
+%sweep(10,20000,2);
 
 %test the measure function
-%test_measure(10,2);
+test_measure(1000,2);
 
 %--------------------------------------EOF--------------------------------------

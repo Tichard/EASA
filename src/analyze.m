@@ -31,13 +31,12 @@ function [fourier, H, THD, SNR] = analyze(signal, Fs, fgen, order)
 	% parasite signal created by the system (harmonics + noise)
 	HN = S;
 	i = ceil((fgen*N/Fs));
-	HN(i:i+1) = 0; %excluding fundamental bin
-	HN(1:2) = 0; %excluding potentialy VLF and DC bin
+	HN(i:i+2) = 0; %excluding fundamental bin
+	HN(1:3) = 0; %excluding potentialy VLF and DC bin
 	
 	
 	fourier(1,:) = f;
 	fourier(2,:) = S;
-	fourier(3,:) = HN;
 	
 	% Choose the THD wanted :
 	%THD = 100*sqrt(sum(H(2:order).^2))/H(1); %THD_F

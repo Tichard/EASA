@@ -44,18 +44,20 @@ function sweep(low,high,n,boolPlot)
 	Fmax = order*(10^(b+1));
 	
 	Fs = 192000; %sampling rate
-	df = 10^a/5; % df < smallest step
+	df = 1; % df < smallest step
 	N = ceil(Fs/df); %number of samples
-	T = 2/df;
+	T = min(max(2/df,0.3),3);
 	t = 0:1/Fs:2*T-(1/Fs); %time vector
-
+	
 	%recording @ <Fs>Hz sampling rate, 16 bits, mono
 	recorder = audiorecorder (Fs, 16, 1);
 	
 	i = 1;
 	for p = a:b
 		for u = 1:0.5:9.5
-			f = u*10^p;
+		
+			f = u*10^p; %frequency			
+	
 			sinu = sin(2*pi*f*t);
 			
 			%playing the frequency @ <Fs>Hz sample rate
@@ -99,7 +101,7 @@ function sweep(low,high,n,boolPlot)
 			xlabel('f (Hz)');
 			ylabel(w(1),'%');
 			ylabel(w(2),'dBV');
-			legend('THD+N (%)','SNR (dBV)','location','southoutside','orientation','horizontal');
+			legend('THD+N','SNR','location','southoutside','orientation','horizontal');
 			grid on
 			axis (w(1), [low high 0 max(r(order+2,1:find(r(1,:)==high)-1))])
 			axis (w(2), [low high])

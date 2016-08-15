@@ -1,4 +1,4 @@
-#-----------------------------------ANALYZE.M-----------------------------------
+#----------------------------------ANALYZE.PY-----------------------------------
 # -*- coding: utf-8 -*-
 
 #> [File Name] analyze.py
@@ -14,11 +14,10 @@
 #function import
 
 #external import
-import math
-from numpy.fft import *
-from numpy import *
-
-
+import math as m
+import numpy.fft as ft
+import numpy
+import scipy.signal as sig
 
 def analyze(signal, Fs, fgen, order):
 	"""
@@ -39,31 +38,31 @@ def analyze(signal, Fs, fgen, order):
         N = len(signal) #number of samples
         f = list(range(0,N/2,Fs/N)) #frequency vector
 
-        Sc = abs(fft(signal)/N) #fft in complex domain
-        S = 2*Sc[0:N/2] #fft in real domain
+        S = abs(ft.rfft(signal)) #fft in real domain
 
         H = []
         for o in range(1,order):  #for all harmonics
-                index = round(o*fgen*N/Fs) #index of the frequency
+                index = m.ceil(o*fgen*N/Fs) #index of the frequency
                 if index+1 < N/2:
                         H.append(max(S[index:index+1]))
                 else: H.append(0)
 
         # parasite signal created by the system (harmonics + noise)
         HN = S
-        i = round((fgen*N/Fs))
+        i = m.ceil((fgen*N/Fs))
         HN[i:i+1] = 0 #excluding fundamental bin
         HN[0:3] = 0 #excluding potentialy VLF and DC bin
 
-        fourier[1] = f
-        fourier[2] = S
+	fourier = [[],[]]
+        fourier[1][] = f
+        fourier[2][] = S
 
         # Choose the THD wanted :
         #THD = 100*sqrt(sum(H(2:order).^2))/H(1) #THD_F
         #THD = 100*sqrt(sum(H(2:order).^2)/sum(H(1:order).^2)) #THD_R
         THD = 100*rms(HN)/rms(S) #THD+N
 
-        SNR = 20*log10(rms(S)/rms(HN)) #SNR to dBV
+        SNR = 20*m.log10(rms(S)/rms(HN)) #SNR to dBV
 
         return [fourier, H, THD, SNR]
 
@@ -80,6 +79,27 @@ def rms(S):
 	rms : float
 		RMS of the input rfft
 	"""
-	return sqrt(sum(S^2)/2)
+	return m.sqrt(sum(S^2)/2)
+
+#-------------------------------MODULE TEST ZONE--------------------------------
+
+if __name__ == '__main__':
+	Fs = 117000
+	df = 1
+	N = Fs/df
+	T = 0.2
+	t = numpy.array(range(Fs))/Fs
+	f = 1000
+
+	sinu = []
+	for i in t: 
+		sinu.append(m.sin(2*m.pi*f*i))
+
+        signal = sinu * sig.blackmanharris(N) #Blackman-Harris window
+
+	analyze(signal, Fs, f,2)
+
+        raw_input('(Press <Enter> to close)')
+
 
 #--------------------------------------EOF--------------------------------------

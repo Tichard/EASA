@@ -1,4 +1,4 @@
-#-----------------------------------MEASURE.M-----------------------------------
+#----------------------------------MEASURE.PY-----------------------------------
 # -*- coding: utf-8 -*-
 
 #> [File Name] measure.py
@@ -17,11 +17,10 @@ import analyze as fct
 import sys
 import time
 
-import math
-import matplotlib.pyplot as plt
+import math as m
 
-from scipy.signal import *
-from numpy import *
+import scipy.signal as sig
+import numpy as np
 
 from FT4222Programmer import ft4222
 from FT4222Programmer.adc088s022 import ADC088S022
@@ -40,49 +39,50 @@ def measure(f, n=0,boolPlot=0):
 	OUPUTS :
 	
 	"""
+	devices = ft4222.FT4222.enumerateDevices()
+	spi0 = ft4222.FT4222(devices[0]['locid'], 0)
+	adc = ADC088S022(spi0)
+
         
         f = min(max(f,10),30000)
         order = min(max(n+1,1),4)
         Fmax = order*f
 
-        Fs = 192000 #sampling rate (48kHz<Fs<192kHz)
+        Fs = 117000 #sampling rate 117kHz
         df = 1 # 1Hz precision
-        N = round(Fs/df) #number of samples
-        T = 2/df
+        N = m.ceil(Fs/df) #number of samples
+        T = 0.2
 
         #recording @ <Fs>Hz sampling rate
-        data = []
-        for i in range(N):
-                data.append(sin(2*pi*f*i/Fs))
-                time.sleep(Fs)
+        data = readVoltage(T)
+        
 
-
-        #windowing or not the response signal
-        signal = data#* blackmanharris(N) #Blackman-Harris window
+	#windowing or not the response signal
+        signal = data * sig blackmanharris(N) #Blackman-Harris window
         [fourier, H, THD, SNR] = fct.analyze(signal, Fs, f, order)
-
-        if boolPlot :
-                plt.plot(fourier(1),fourier(2)))
-                plt.show()
 
         print('Fundamental (',f,' Hz): ',20*log10(H(1)),' dBV\n')
         for i in range(2,order):
-                print('Harmonic ',i-1,' (',i*f,' Hz): ',20*log10(H(i)),' dBV\n')
+                print('Harmonic ',i-1,' (',i*f,' Hz): ',20*m.log10(H(i)),' dBV\n')
 
         print('THD+N : ',THD,'%\n')
         print('SNR   : ',SNR,' dBV\n')
 
         return true
 
-def readVoltage():
+def readVoltage(T):
 	"""
 	INPUTS :
+	T : float
+		reading time
 		
 	OUPUTS :
 	v : float
 		voltage read on the pin
 	"""
-        return v
+        data = adc.read( ADC088S022.CHANNEL_0,T )
+
+        return data
         
 #-------------------------------MODULE TEST ZONE--------------------------------
 
@@ -90,18 +90,10 @@ if __name__ == '__main__':
         
         Fs = 48000
         T = 20
-		f = 440
-		n=1
-		
-        t = list(range(0,T,1/Fs)) #time vector
-        sinu = sin(2*pi*f*t);
+        f = 440
+        n=1
+       
+        measure(f,n);
 
-        player = audioplayer (sinu, Fs);
-
-        play (player)
-
-        measure(f,n,1);
-
-        stop (player);
-		raw_input('(Press <Enter> to close)')
+        raw_input('(Press <Enter> to close)')
 #--------------------------------------EOF--------------------------------------

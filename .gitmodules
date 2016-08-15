@@ -1,0 +1,3 @@
+[submodule "python/FT4222Programmer"]
+	path = python/FT4222Programmer
+	url = ssh://git@git.electrocompaniet.no:223/ec/FT4222Programmer.git

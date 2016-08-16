@@ -5,7 +5,7 @@
 #> [Platform] EC Model5 testbench
 #> [Version] alpha
 #> [Author] Richard
-#> [Date] 15/08/2016
+#> [Date] 16/08/2016
 #> [Language] python
 #> [Description] Computes the harmonic response and several distortion rates 
 #> from a response signal to a 'fgen' Hz sinewave sampled at 'Fs' Hz
@@ -50,19 +50,20 @@ def analyze(signal, Fs, fgen, order):
 	# parasite signal created by the system (harmonics + noise)
 	HN = np.array(S[:])
 	i = np.ceil((float(fgen)*N/Fs))
-	HN[i:i+1] = 0 #excluding fundamental bin
+	HN[i-1:i+2] = 0 #excluding fundamental bin
+	F = np.array(S[:]-HN[:]) #isolating the fundamental bin
 	HN[0:3] = 0 #excluding potentialy VLF and DC bin
 
-	fourier = [[],[]]
+	fourier = [[],[],[]]
 	fourier[0] = f
 	fourier[1] = S
 
 	# Choose the THD wanted :
-	#THD = 100*sqrt(sum(H(2:order).^2))/H(1) #THD_F
-	#THD = 100*sqrt(sum(H(2:order).^2)/sum(H(1:order).^2)) #THD_R
-	THD = 100*rms(HN)/rms(S) #THD+N
+	#THD = 100*sqrt(sum(H(2:order).^2))/H(1) #THD_F !!OBSOLETE!!
+	#THD = 100*sqrt(sum(H(2:order).^2)/sum(H(1:order).^2)) #THD_R !!OBSOLETE!!
+	THD = 100*rms(HN)/rms(F) #THD+N
 
-	SNR = 20*np.log10(rms(S)/rms(HN)) #SNR to dBV
+	SNR = 20*np.log10(rms(F)/rms(HN)) #SNR to dBV
 
 	return (fourier, H, THD, SNR)
 
@@ -85,7 +86,7 @@ def rms(S):
 
 if __name__ == '__main__':
 
-	
+	import platform
 	import random as rd
 	import scipy.signal as sig
 	import matplotlib.pyplot as plt
@@ -96,23 +97,25 @@ if __name__ == '__main__':
 	
 	n = np.arange(N)
 	f = 1000
-	order = 4
+	h = 1
+	order = min(max(h+2,2),6)
 
-	sinu  = np.sin(2*np.pi*f*n/Fs)+0.00004*np.sin(6*np.pi*f*n/Fs)
+	sinu  = np.sin(2*np.pi*f*n/Fs)+ 0.0007*np.random.rand(N)
 
 	signal = sinu #* sig.blackmanharris(N) #Blackman-Harris window !!!Amplitude issues!!!
 
 	(fourier, H, THD, SNR) = analyze(signal, Fs, f, order)
 
 	print "Fundamental (",f,"Hz): ",np.round(20*np.log10(H[0]),3),"dBV"
+
 	for i in range(1,order-1):
 		print "Harmonic ",i,"(",(i+1)*f,"Hz):",np.round(20*np.log10(H[i]),3),"dBV"
 
 	print "THD+N : ",np.round(THD,3),"%"
 	print "SNR   : ",np.round(SNR,3),"dBV"
 
-
-	plt.plot(fourier[0],fourier[1])
-	plt.show()
+	if platform.system()== 'Windows':
+		plt.plot(fourier[0],fourier[1])
+		plt.show()
 
 #--------------------------------------EOF--------------------------------------

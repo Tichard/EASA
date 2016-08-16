@@ -17,8 +17,6 @@ import analyze as fct
 import sys
 import time
 
-import math as m
-
 import scipy.signal as sig
 import numpy as np
 
@@ -43,32 +41,33 @@ def measure(f, n=0,boolPlot=0):
 	spi0 = ft4222.FT4222(devices[0]['locid'], 0)
 	adc = ADC088S022(spi0)
 
-        
-        f = min(max(f,10),30000)
-        order = min(max(n+1,1),4)
-        Fmax = order*f
+	
+	f = min(max(f,10),30000)
+	order = min(max(n+1,1),4)
+	Fmax = order*f
 
-        Fs = 117000 #sampling rate 117kHz
-        df = 1 # 1Hz precision
-        N = m.ceil(Fs/df) #number of samples
-        T = 0.2
+	Fs = 117000 #sampling rate 117kHz
+	df = 1 # 1Hz precision
+	N = np.ceil(Fs/df) #number of samples
+	T = N/Fs
 
-        #recording @ <Fs>Hz sampling rate
-        data = readVoltage(T)
-        
+	#recording @ <Fs>Hz sampling rate
+	data = readVoltage(T)
+	end = len(data)
+	
 
 	#windowing or not the response signal
-        signal = data * sig blackmanharris(N) #Blackman-Harris window
-        [fourier, H, THD, SNR] = fct.analyze(signal, Fs, f, order)
+	signal = data[end-N:end] #* sig.blackmanharris(N) #Blackman-Harris window !!!Amplitude issues!!!
+	[fourier, H, THD, SNR] = fct.analyze(signal, Fs, f, order)
 
-        print('Fundamental (',f,' Hz): ',20*log10(H(1)),' dBV\n')
-        for i in range(2,order):
-                print('Harmonic ',i-1,' (',i*f,' Hz): ',20*m.log10(H(i)),' dBV\n')
+	print "Fundamental (",f,"Hz): ",np.round(20*np.log10(H[0]),3),"dBV"
+	for i in range(1,order-1):
+		print "Harmonic ",i,"(",(i+1)*f,"Hz):",np.round(20*np.log10(H[i]),3),"dBV"
 
-        print('THD+N : ',THD,'%\n')
-        print('SNR   : ',SNR,' dBV\n')
+	print "THD+N : ",np.round(THD,3),"%"
+	print "SNR   : ",np.round(SNR,3),"dBV"
 
-        return true
+	return 1
 
 def readVoltage(T):
 	"""
@@ -77,23 +76,21 @@ def readVoltage(T):
 		reading time
 		
 	OUPUTS :
-	v : float
+	data : float
 		voltage read on the pin
 	"""
-        data = adc.read( ADC088S022.CHANNEL_0,T )
-
-        return data
-        
+	data = adc.read( ADC088S022.CHANNEL_0,T )
+	
+	return data
+	
 #-------------------------------MODULE TEST ZONE--------------------------------
 
 if __name__ == '__main__':
-        
-        Fs = 48000
-        T = 20
-        f = 440
-        n=1
+	
+	Fs = 48000
+	T = 20
+	f = 1000
+	n=1
        
-        measure(f,n);
-
-        raw_input('(Press <Enter> to close)')
+	measure(f,n);
 #--------------------------------------EOF--------------------------------------

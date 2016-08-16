@@ -14,10 +14,8 @@
 #function import
 
 #external import
-import math as m
 import numpy.fft as ft
-import numpy
-import scipy.signal as sig
+import numpy as np
 
 def analyze(signal, Fs, fgen, order):
 	"""
@@ -35,36 +33,38 @@ def analyze(signal, Fs, fgen, order):
 	
 	"""
 
-        N = len(signal) #number of samples
-        f = list(range(0,N/2,Fs/N)) #frequency vector
+	N = len(signal) #number of samples
+	df = float(Fs)/N
+	f = np.arange(0,N/2)*df #frequency vector
 
-        S = abs(ft.rfft(signal)) #fft in real domain
+	Sc = abs(ft.fft(signal)/N) #fft in complex domain
+	S = 2*Sc[:N/2] #fft in real domain
 
-        H = []
-        for o in range(1,order):  #for all harmonics
-                index = m.ceil(o*fgen*N/Fs) #index of the frequency
-                if index+1 < N/2:
-                        H.append(max(S[index:index+1]))
-                else: H.append(0)
+	H = []
+	for o in range(1,order):  #for all harmonics
+		index = np.ceil(o*fgen*N/Fs) #index of the frequency
+		if index+1 < N/2:
+			H.append(max(S[index:index+1]))
+		else: H.append(0)
 
-        # parasite signal created by the system (harmonics + noise)
-        HN = S
-        i = m.ceil((fgen*N/Fs))
-        HN[i:i+1] = 0 #excluding fundamental bin
-        HN[0:3] = 0 #excluding potentialy VLF and DC bin
+	# parasite signal created by the system (harmonics + noise)
+	HN = np.array(S[:])
+	i = np.ceil((float(fgen)*N/Fs))
+	HN[i:i+1] = 0 #excluding fundamental bin
+	HN[0:3] = 0 #excluding potentialy VLF and DC bin
 
 	fourier = [[],[]]
-        fourier[1][] = f
-        fourier[2][] = S
+	fourier[0] = f
+	fourier[1] = S
 
-        # Choose the THD wanted :
-        #THD = 100*sqrt(sum(H(2:order).^2))/H(1) #THD_F
-        #THD = 100*sqrt(sum(H(2:order).^2)/sum(H(1:order).^2)) #THD_R
-        THD = 100*rms(HN)/rms(S) #THD+N
+	# Choose the THD wanted :
+	#THD = 100*sqrt(sum(H(2:order).^2))/H(1) #THD_F
+	#THD = 100*sqrt(sum(H(2:order).^2)/sum(H(1:order).^2)) #THD_R
+	THD = 100*rms(HN)/rms(S) #THD+N
 
-        SNR = 20*m.log10(rms(S)/rms(HN)) #SNR to dBV
+	SNR = 20*np.log10(rms(S)/rms(HN)) #SNR to dBV
 
-        return [fourier, H, THD, SNR]
+	return (fourier, H, THD, SNR)
 
 
 def rms(S):
@@ -79,27 +79,40 @@ def rms(S):
 	rms : float
 		RMS of the input rfft
 	"""
-	return m.sqrt(sum(S^2)/2)
+	return np.sqrt(np.sum(S*S)/2)
 
 #-------------------------------MODULE TEST ZONE--------------------------------
 
 if __name__ == '__main__':
-	Fs = 117000
-	df = 1
-	N = Fs/df
-	T = 0.2
-	t = numpy.array(range(Fs))/Fs
+
+	
+	import random as rd
+	import scipy.signal as sig
+	import matplotlib.pyplot as plt
+	
+	Fs = 117000 #sampling rate 117kHz
+	df = 0.1 # 1Hz precision
+	N = np.ceil(Fs/df) #number of samples
+	
+	n = np.arange(N)
 	f = 1000
+	order = 4
 
-	sinu = []
-	for i in t: 
-		sinu.append(m.sin(2*m.pi*f*i))
+	sinu  = np.sin(2*np.pi*f*n/Fs)+0.00004*np.sin(6*np.pi*f*n/Fs)
 
-        signal = sinu * sig.blackmanharris(N) #Blackman-Harris window
+	signal = sinu #* sig.blackmanharris(N) #Blackman-Harris window !!!Amplitude issues!!!
 
-	analyze(signal, Fs, f,2)
+	(fourier, H, THD, SNR) = analyze(signal, Fs, f, order)
 
-        raw_input('(Press <Enter> to close)')
+	print "Fundamental (",f,"Hz): ",np.round(20*np.log10(H[0]),3),"dBV"
+	for i in range(1,order-1):
+		print "Harmonic ",i,"(",(i+1)*f,"Hz):",np.round(20*np.log10(H[i]),3),"dBV"
 
+	print "THD+N : ",np.round(THD,3),"%"
+	print "SNR   : ",np.round(SNR,3),"dBV"
+
+
+	plt.plot(fourier[0],fourier[1])
+	plt.show()
 
 #--------------------------------------EOF--------------------------------------

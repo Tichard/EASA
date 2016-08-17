@@ -1,16 +1,15 @@
 # EASA
 Electrical Audio Spectrum Analyzer
 
-Measures a system and display the spectrum analysis as the harmonic frequency response and several distortion rates using Octave GNU software.
+Measures a system and display the spectrum analysis as the harmonic frequency response and several distortion rates.
 
 FEATURES :
-- From 10Hz to 30kHz spectrum analysis
+- From 10Hz to 30kHz spectrum analysis*
 - Frequency response up to the 4th harmonic
-- Computing THD and SNR
-- Frequency stepped sweep analysing with spectrum display
+- Computing THD and SINAD
+- Frequency stepped sweep analysing with spectrum display*
 - Optimized analysis algorithm
-- Auto-adjusted sampling frequency
-- Frequency stepped sweep analysis time <1min
+- Auto-adjusted sampling frequency*
 
 USER MANUAL :
 
@@ -20,7 +19,7 @@ USER MANUAL :
 
 3 - Set your system volume
 
-4 - Run the software with Octave GNU
+4 - Run the software
 
 5 - Observe the response
 
@@ -32,3 +31,5 @@ USER MANUAL :
 
 SUPPORT :
 For any requests or informations, please contact: richard.taupiac@gmail.com
+
+* available in the official 1.00 release

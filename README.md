@@ -32,4 +32,4 @@ USER MANUAL :
 SUPPORT :
 For any requests or informations, please contact: richard.taupiac@gmail.com
 
-* available in the official 1.00 release
+(*) available in the official 1.00 release

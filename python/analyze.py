@@ -89,18 +89,25 @@ if __name__ == '__main__':
 	import platform
 	import random as rd
 	import scipy.signal as sig
-	import matplotlib.pyplot as plt
-	
+
+	boolplot = 0
+		
 	Fs = 117000 #sampling rate 117kHz
 	df = 0.1 # 1Hz precision
 	N = np.ceil(Fs/df) #number of samples
 	
 	n = np.arange(N)
-	f = 1000
+	f = 100
 	h = 1
 	order = min(max(h+2,2),6)
 
-	sinu  = np.sin(2*np.pi*f*n/Fs)+ 0.0007*np.random.rand(N)
+	a = [1,0.03,0.005]
+	
+	THD_real = 100*np.sqrt((a[1]**2+a[2]**2)/(a[0]**2))
+	SNR_real = 10*np.log10((a[0]**2)/(a[1]**2+a[2]**2))        
+	
+
+	sinu  = a[0]*np.sin(2*np.pi*f*n/Fs)+a[1]*np.sin(4*np.pi*f*n/Fs)+a[2]*np.sin(6*np.pi*f*n/Fs)
 
 	signal = sinu #* sig.blackmanharris(N) #Blackman-Harris window !!!Amplitude issues!!!
 
@@ -111,10 +118,16 @@ if __name__ == '__main__':
 	for i in range(1,order-1):
 		print "Harmonic ",i,"(",(i+1)*f,"Hz):",np.round(20*np.log10(H[i]),3),"dBV"
 
-	print "THD+N : ",np.round(THD,3),"%"
-	print "SNR   : ",np.round(SNR,3),"dBV"
+	if np.round(THD,3) == np.round(THD_real,3):
+		print "THD+N : ",np.round(THD,3),"%                  OK"
+	else: print "THD+N : ",np.round(THD,3),"%                ERROR",THD_real
 
-	if platform.system()== 'Windows':
+	if np.round(SNR,4) == np.round(SNR_real,4) :
+		print "SNR   : ",np.round(SNR,4),"dBV              OK"
+	else: print "SNR   : ",np.round(SNR,4),"dBV              ERROR",SNR_real
+	
+	if (platform.system()== 'Windows') and boolplot:
+		import matplotlib.pyplot as plt
 		plt.plot(fourier[0],fourier[1])
 		plt.show()
 

@@ -63,9 +63,9 @@ def analyze(signal, Fs, fgen, order):
 	#THD = 100*sqrt(sum(H(2:order).^2)/sum(H(1:order).^2)) #THD_R !!OBSOLETE!!
 	THD = 100*rms(HN)/rms(F) #THD+N
 
-	SNR = 20*np.log10(rms(F)/rms(HN)) #SNR to dBV
+	SINAD = 20*np.log10(rms(F)/rms(HN)) #SINAD to dBV
 
-	return (fourier, H, THD, SNR)
+	return (fourier, H, THD, SINAD)
 
 
 def rms(S):
@@ -87,6 +87,7 @@ def rms(S):
 if __name__ == '__main__':
 
 	import platform
+	import sys
 	import random as rd
 	import scipy.signal as sig
 
@@ -98,33 +99,57 @@ if __name__ == '__main__':
 	
 	n = np.arange(N)
 	f = 100
-	h = 1
+	h = 2
 	order = min(max(h+2,2),6)
 
-	a = [1,0.03,0.005]
+	a = [1,0.00005,0.00003]
 	
 	THD_real = 100*np.sqrt((a[1]**2+a[2]**2)/(a[0]**2))
-	SNR_real = 10*np.log10((a[0]**2)/(a[1]**2+a[2]**2))        
+	SINAD_real = 10*np.log10((a[0]**2)/(a[1]**2+a[2]**2))        
 	
 
 	sinu  = a[0]*np.sin(2*np.pi*f*n/Fs)+a[1]*np.sin(4*np.pi*f*n/Fs)+a[2]*np.sin(6*np.pi*f*n/Fs)
 
 	signal = sinu #* sig.blackmanharris(N) #Blackman-Harris window !!!Amplitude issues!!!
 
-	(fourier, H, THD, SNR) = analyze(signal, Fs, f, order)
+	(fourier, H, THD, SINAD) = analyze(signal, Fs, f, order)
 
-	print "Fundamental (",f,"Hz): ",np.round(20*np.log10(H[0]),3),"dBV"
+	print "Fundamental (",f,"Hz): ",np.round(20*np.log10(H[0]),2),"dBV                     ",
+	if np.round(H[0],2) == np.round(a[0],2):
+		sys.stdout.write("\033[32m")
+		print "OK"
+	else :
+		sys.stdout.write("\033[31m")
+		print "ERROR"
+	sys.stdout.write("\033[37m")
 
 	for i in range(1,order-1):
-		print "Harmonic ",i,"(",(i+1)*f,"Hz):",np.round(20*np.log10(H[i]),3),"dBV"
+		print "Harmonic ",i,"(",(i+1)*f,"Hz):",np.round(20*np.log10(H[i]),2),"dB                    ",
+		if np.round(H[i],2) == np.round(a[i],2):
+			sys.stdout.write("\033[32m")
+			print "OK"
+		else:
+			sys.stdout.write("\033[31m")
+			print "ERROR"
+		sys.stdout.write("\033[37m")
 
-	if np.round(THD,3) == np.round(THD_real,3):
-		print "THD+N : ",np.round(THD,3),"%                  OK"
-	else: print "THD+N : ",np.round(THD,3),"%                ERROR",THD_real
-
-	if np.round(SNR,4) == np.round(SNR_real,4) :
-		print "SNR   : ",np.round(SNR,4),"dBV              OK"
-	else: print "SNR   : ",np.round(SNR,4),"dBV              ERROR",SNR_real
+	print "THD+N                : ",np.round(THD,3),"%                     ",
+	if  np.round(THD,3) == np.round(THD_real,3):
+		sys.stdout.write("\033[32m")
+		print "OK"
+	else:
+		sys.stdout.write("\033[31m")
+		print "ERROR"
+	sys.stdout.write("\033[37m")
+	
+	print "SINAD                : ",np.round(SINAD,1),"dBV                    ",
+	if np.round(SINAD,4) == np.round(SINAD_real,4) :
+		sys.stdout.write("\033[32m")
+		print"OK"
+	else:
+		sys.stdout.write("\033[31m")
+		print "ERROR"
+	sys.stdout.write("\033[37m")
 	
 	if (platform.system()== 'Windows') and boolplot:
 		import matplotlib.pyplot as plt

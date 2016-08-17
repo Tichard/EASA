@@ -46,20 +46,19 @@ def measure(f, n=0,boolPlot=0):
 	
 	f = min(max(f,10),30000)
 	order = min(max(n+2,2),6)
-	Fmax = order*f
-
+	
 	Fs = 117000 #sampling rate 117kHz
-	df = 0.1 # 1Hz precision
+	df = 10 # 10Hz precision (maximum supported)
 	N = np.ceil(Fs/df) #number of samples
-	T = N/Fs
+	T =1.050/df #take 5% more samples than needed to avoid transient response
 
 	#recording @ <Fs>Hz sampling rate
-	data = readVoltage(T)
+	data = readVoltage(adc,T)
 	end = len(data)
+	nb = int(N)
 	
-
 	#windowing or not the response signal
-	signal = data[end-N:end] #* sig.blackmanharris(N) #Blackman-Harris window !!!Amplitude issues!!!
+	signal = data[end-nb:end] #* sig.blackmanharris(N) #Blackman-Harris window !!!Amplitude issues!!!
 	(fourier, H, THD, SNR) = fct.analyze(signal, Fs, f, order)
 
 	print "Fundamental (",f,"Hz): ",np.round(20*np.log10(H[0]),3),"dBV"
@@ -76,17 +75,17 @@ def measure(f, n=0,boolPlot=0):
 		
 	return 1
 
-def readVoltage(T):
+def readVoltage(ADC,T):
 	"""
 	INPUTS :
 	T : float
-		reading time
+		reading time (nb of samples wanted / Fs)
 		
 	OUPUTS :
 	data : float
 		voltage read on the pin
 	"""
-	data = adc.read( ADC088S022.CHANNEL_0,T )
+	data = ADC.read( ADC088S022.CHANNEL_0, T )
 	
 	return data
 	

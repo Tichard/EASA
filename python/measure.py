@@ -59,12 +59,9 @@ def measure(f, n=0,boolPlot=0):
 	SELECT_ADC = ft4222.GPIO.GPIO_PORT3
 	adc = ADC088S022(spi0)
 
-
 	gpio.set(POWER_ON, True) #power on
 	gpio.set(SELECT_ADC, True) # Enable the ADC reading
 
-
-	
 	f = min(max(f,10),30000)
 	order = min(max(n+2,2),6)
 	
@@ -92,7 +89,8 @@ def measure(f, n=0,boolPlot=0):
 	print "THD+N : ",np.round(THD,3),"%"
 	print "SNR   : ",np.round(SNR,3),"dBV"
 
-	if (platform.system()== 'Windows') and boolPlot:
+	if boolPlot & (("DISPLAY" in os.environ)|(platform.system() == 'WINDOWS')) :    #check if can dipslay
+		import matplotlib.pyplot as plt
 		plt.plot(fourier[0],fourier[1])
 		plt.show()
 		
@@ -108,7 +106,7 @@ def readVoltage(ADC,T):
 	data : float
 		voltage read on the pin
 	"""
-	data = ADC.read( ADC088S022.CHANNEL_2, T )
+	data = ADC.read( ADC088S022.CHANNEL_2, 0.01 )
 	print data
 		
 	return data

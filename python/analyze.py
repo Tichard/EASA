@@ -86,20 +86,21 @@ def rms(S):
 
 if __name__ == '__main__':
 
-	import platform
+	import os
+	import platfom
 	import sys
 	import random as rd
 	import scipy.signal as sig
 
 
-	boolplot = 0
+	boolPlot = 1
 		
 	Fs = 117000 #sampling rate 117kHz
 	df = 0.1 # 1Hz precision
 	N = np.ceil(Fs/df) #number of samples
 	
 	n = np.arange(N)
-	f = 100
+	f = 1000
 	h = 2
 	order = min(max(h+2,2),6)
 
@@ -111,7 +112,7 @@ if __name__ == '__main__':
 
 	sinu  = a[0]*np.sin(2*np.pi*f*n/Fs)+a[1]*np.sin(4*np.pi*f*n/Fs)+a[2]*np.sin(6*np.pi*f*n/Fs)
 
-	signal = sinu * sig.blackmanharris(N) #Blackman-Harris window !!!Amplitude issues!!!
+	signal = sinu #* sig.blackmanharris(N) #Blackman-Harris window !!!Amplitude issues!!!
 
 	(fourier, H, THD, SINAD) = analyze(signal, Fs, f, order)
 
@@ -152,7 +153,7 @@ if __name__ == '__main__':
 		print "ERROR"
 	sys.stdout.write("\033[37m")
 	
-	if (platform.system()== 'Windows') and boolplot:
+	if boolPlot & (("DISPLAY" in os.environ)|(platform.system() == 'WINDOWS')) :    #check if can dipslay
 		import matplotlib.pyplot as plt
 		plt.plot(fourier[0],fourier[1])
 		plt.show()

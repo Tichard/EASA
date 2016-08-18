@@ -49,10 +49,14 @@ def analyze(signal, Fs, fgen, order):
 
 	# parasite signal created by the system (harmonics + noise)
 	HN = np.array(S[:])
+	
 	i = np.ceil((float(fgen)*N/Fs))
-	bw = 100*N/Fs #100Hz bandwidth gate
+	bw =int(0.05*fgen*N/Fs) # 10% bandwidth gate (5% each side)
+	
 	HN[i-bw:i+bw] = 0 #excluding fundamental bin
+	
 	F = np.array(S[:]-HN[:]) #isolating the fundamental bin
+	
 	HN[0:bw] = 0 #excluding potentialy VLF and DC bin
 
 	fourier = [[],[],[]]
@@ -96,8 +100,8 @@ if __name__ == '__main__':
 
 	boolPlot = 1
 		
-	Fs = 117000 #sampling rate 117kHz
-	df = 0.1 #Hz precision
+	Fs = 938000 #sampling rate 938kHz
+	df = 2 #Hz precision
 	N = np.ceil(Fs/df) #number of samples
 	
 	n = np.arange(N)
@@ -105,21 +109,21 @@ if __name__ == '__main__':
 	h = 2
 	order = min(max(h+2,2),6)
 
-	sinu  = np.sin(2*np.pi*f*n/Fs)+0.01*np.random.rand(n)
+	sinu  = 0.2*np.sin(2*np.pi*f*n/Fs)+0.02*np.random.rand(N)
 
 	signal = sinu #* sig.blackmanharris(N) #Blackman-Harris window !!!Amplitude issues!!!
 
 	(fourier, H, THD, SINAD) = analyze(signal, Fs, f, order)
 
-	print "Fundamental (",f,"Hz): ",np.round(20*np.log10(H[0]),2),"dBV",
+	print "Fundamental (",f,"Hz): ",np.round(20*np.log10(H[0]),2),"dBV"
 
 	for i in range(1,order-1):
-		print "Harmonic ",i,"(",(i+1)*f,"Hz):",np.round(20*np.log10(H[i]),2),"dB",
+		print "Harmonic ",i,"(",(i+1)*f,"Hz):",np.round(20*np.log10(H[i]),2),"dB"
 
-	print "THD+N                : ",np.round(THD,3),"%",
+	print "THD+N                : ",np.round(THD,3),"%"
 	
-	print "SINAD                : ",np.round(SINAD,1),"dBV",
-	
+	print "SINAD                : ",np.round(SINAD,1),"dBV"
+
 	if boolPlot & (("DISPLAY" in os.environ)|(platform.system() == 'WINDOWS')) :    #check if can dipslay
 		import matplotlib.pyplot as plt
 		plt.plot(fourier[0],fourier[1])

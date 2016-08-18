@@ -82,7 +82,7 @@ def measure(f, n=0,boolPlot=0):
 	order = min(max(n+2,2),6)
 	
 	Fs = pin['adc'].Fs
-	df = 100 #Hz precision (maximum supported : 10Hz)
+	df = 5 #Hz precision (maximum supported : 2Hz)
 	N = np.ceil(Fs/df) #number of samples
 	T =1.050/df #take 5% more samples than needed to avoid transient response
 
@@ -90,7 +90,6 @@ def measure(f, n=0,boolPlot=0):
 	data = readVoltage(pin['adc'],T)
 	end = len(data)
 	nb = int(N)
-	print nb
 		
 	#windowing or not the response signal
 	signal = data[end-nb:end] #* sig.blackmanharris(N) #Blackman-Harris window !!!Amplitude issues!!!

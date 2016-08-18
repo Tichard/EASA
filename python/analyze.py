@@ -50,9 +50,10 @@ def analyze(signal, Fs, fgen, order):
 	# parasite signal created by the system (harmonics + noise)
 	HN = np.array(S[:])
 	i = np.ceil((float(fgen)*N/Fs))
-	HN[i-1:i+2] = 0 #excluding fundamental bin
+	bw = 100*N/Fs #100Hz bandwidth gate
+	HN[i-bw:i+bw] = 0 #excluding fundamental bin
 	F = np.array(S[:]-HN[:]) #isolating the fundamental bin
-	HN[0:3] = 0 #excluding potentialy VLF and DC bin
+	HN[0:bw] = 0 #excluding potentialy VLF and DC bin
 
 	fourier = [[],[],[]]
 	fourier[0] = f
@@ -104,13 +105,7 @@ if __name__ == '__main__':
 	h = 2
 	order = min(max(h+2,2),6)
 
-	a = [1,0.00005,0.00003]
-	
-	THD_real = 100*np.sqrt((a[1]**2+a[2]**2)/(a[0]**2))
-	SINAD_real = 10*np.log10((a[0]**2)/(a[1]**2+a[2]**2))        
-	
-
-	sinu  = a[0]*np.sin(2*np.pi*f*n/Fs)+a[1]*np.sin(4*np.pi*f*n/Fs)+a[2]*np.sin(6*np.pi*f*n/Fs)
+	sinu  = np.sin(2*np.pi*f*n/Fs)+0.01*np.random.rand(n)
 
 	signal = sinu #* sig.blackmanharris(N) #Blackman-Harris window !!!Amplitude issues!!!
 

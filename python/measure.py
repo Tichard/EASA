@@ -30,7 +30,7 @@ def init():
 
 	OUTPUT :
 	PIN : array-like
-		list of hardware element
+		dict of hardware element
 
 	Init the Hardware
 	"""
@@ -82,7 +82,7 @@ def measure(f, n=0,boolPlot=0):
 	order = min(max(n+2,2),6)
 	
 	Fs = pin['adc'].Fs
-	df = 10 #Hz precision (maximum supported : 10Hz)
+	df = 100 #Hz precision (maximum supported : 10Hz)
 	N = np.ceil(Fs/df) #number of samples
 	T =1.050/df #take 5% more samples than needed to avoid transient response
 
@@ -90,10 +90,11 @@ def measure(f, n=0,boolPlot=0):
 	data = readVoltage(pin['adc'],T)
 	end = len(data)
 	nb = int(N)
+	print nb
 		
 	#windowing or not the response signal
 	signal = data[end-nb:end] #* sig.blackmanharris(N) #Blackman-Harris window !!!Amplitude issues!!!
-	(fourier, H, THD, SNR) = fct.analyze(signal, Fs, f, order)
+	(fourier, H, THD, SINAD) = fct.analyze(signal, Fs, f, order)
 
 	print "Fundamental (",f,"Hz): ",np.round(20*np.log10(H[0]),3),"dBV"
 
@@ -101,7 +102,7 @@ def measure(f, n=0,boolPlot=0):
 		print "Harmonic ",i,"(",(i+1)*f,"Hz):",np.round(20*np.log10(H[i]),3),"dBV"
 
 	print "THD+N : ",np.round(THD,3),"%"
-	print "SNR   : ",np.round(SNR,3),"dBV"
+	print "SINAD : ",np.round(SINAD,3),"dBV"
 
 	if boolPlot & (("DISPLAY" in os.environ)|(platform.system() == 'WINDOWS')) :    #check if can dipslay
 		import matplotlib.pyplot as plt
@@ -138,8 +139,8 @@ def readDC(ADC):
 if __name__ == '__main__':
 	
 	f = 1000
-	n=3
+	n=2
        
-	measure(f,n)
+	measure(f,n,1)
 	print	
 #--------------------------------------EOF--------------------------------------

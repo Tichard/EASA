@@ -87,7 +87,7 @@ def rms(S):
 if __name__ == '__main__':
 
 	import os
-	import platfom
+	import platform
 	import sys
 	import random as rd
 	import scipy.signal as sig
@@ -96,7 +96,7 @@ if __name__ == '__main__':
 	boolPlot = 1
 		
 	Fs = 117000 #sampling rate 117kHz
-	df = 0.1 # 1Hz precision
+	df = 0.1 #Hz precision
 	N = np.ceil(Fs/df) #number of samples
 	
 	n = np.arange(N)
@@ -116,42 +116,14 @@ if __name__ == '__main__':
 
 	(fourier, H, THD, SINAD) = analyze(signal, Fs, f, order)
 
-	print "Fundamental (",f,"Hz): ",np.round(20*np.log10(H[0]),2),"dBV                     ",
-	if np.round(H[0],2) == np.round(a[0],2):
-		sys.stdout.write("\033[32m")
-		print "OK"
-	else :
-		sys.stdout.write("\033[31m")
-		print "ERROR"
-	sys.stdout.write("\033[37m")
+	print "Fundamental (",f,"Hz): ",np.round(20*np.log10(H[0]),2),"dBV",
 
 	for i in range(1,order-1):
-		print "Harmonic ",i,"(",(i+1)*f,"Hz):",np.round(20*np.log10(H[i]),2),"dB                    ",
-		if np.round(H[i],2) == np.round(a[i],2):
-			sys.stdout.write("\033[32m")
-			print "OK"
-		else:
-			sys.stdout.write("\033[31m")
-			print "ERROR"
-		sys.stdout.write("\033[37m")
+		print "Harmonic ",i,"(",(i+1)*f,"Hz):",np.round(20*np.log10(H[i]),2),"dB",
 
-	print "THD+N                : ",np.round(THD,3),"%                     ",
-	if  np.round(THD,3) == np.round(THD_real,3):
-		sys.stdout.write("\033[32m")
-		print "OK"
-	else:
-		sys.stdout.write("\033[31m")
-		print "ERROR"
-	sys.stdout.write("\033[37m")
+	print "THD+N                : ",np.round(THD,3),"%",
 	
-	print "SINAD                : ",np.round(SINAD,1),"dBV                    ",
-	if np.round(SINAD,4) == np.round(SINAD_real,4) :
-		sys.stdout.write("\033[32m")
-		print"OK"
-	else:
-		sys.stdout.write("\033[31m")
-		print "ERROR"
-	sys.stdout.write("\033[37m")
+	print "SINAD                : ",np.round(SINAD,1),"dBV",
 	
 	if boolPlot & (("DISPLAY" in os.environ)|(platform.system() == 'WINDOWS')) :    #check if can dipslay
 		import matplotlib.pyplot as plt

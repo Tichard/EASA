@@ -91,6 +91,7 @@ if __name__ == '__main__':
 	import random as rd
 	import scipy.signal as sig
 
+
 	boolplot = 0
 		
 	Fs = 117000 #sampling rate 117kHz
@@ -110,7 +111,7 @@ if __name__ == '__main__':
 
 	sinu  = a[0]*np.sin(2*np.pi*f*n/Fs)+a[1]*np.sin(4*np.pi*f*n/Fs)+a[2]*np.sin(6*np.pi*f*n/Fs)
 
-	signal = sinu #* sig.blackmanharris(N) #Blackman-Harris window !!!Amplitude issues!!!
+	signal = sinu * sig.blackmanharris(N) #Blackman-Harris window !!!Amplitude issues!!!
 
 	(fourier, H, THD, SINAD) = analyze(signal, Fs, f, order)
 

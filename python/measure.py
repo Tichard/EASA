@@ -103,7 +103,7 @@ def measure(f, n=0,boolPlot=0):
 	print "THD+N : ",np.round(THD,3),"%"
 	print "SINAD : ",np.round(SINAD,3),"dBV"
 
-	if boolPlot & (("DISPLAY" in os.environ)|(platform.system() == 'WINDOWS')) :    #check if can dipslay
+	if boolPlot & (("DISPLAY" in os.environ)|(platform.system() == 'Windows')) :    #check if can dipslay
 		import matplotlib.pyplot as plt
 		plt.plot(fourier[0],fourier[1])
 		plt.show()

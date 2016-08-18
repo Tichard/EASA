@@ -51,17 +51,18 @@ def analyze(signal, Fs, fgen, order):
 	HN = np.array(S[:])
 	
 	i = np.ceil((float(fgen)*N/Fs))
-	bw =int(0.05*fgen*N/Fs) # 10% bandwidth gate (5% each side)
+	bw =int(0.1*fgen*N/Fs) # 20% bandwidth gate (10% each side)
 	
 	HN[i-bw:i+bw] = 0 #excluding fundamental bin
 	
 	F = np.array(S[:]-HN[:]) #isolating the fundamental bin
 	
-	HN[0:bw] = 0 #excluding potentialy VLF and DC bin
+	HN[:2*bw] = 0 #excluding potentialy VLF and DC bin
 
 	fourier = [[],[],[]]
 	fourier[0] = f
-	fourier[1] = S
+	fourier[1] = F
+	fourier[2] = HN
 
 	# Choose the THD wanted :
 	#THD = 100*sqrt(sum(H(2:order).^2))/H(1) #THD_F !!OBSOLETE!!
@@ -109,7 +110,8 @@ if __name__ == '__main__':
 	h = 2
 	order = min(max(h+2,2),6)
 
-	sinu  = 0.2*np.sin(2*np.pi*f*n/Fs)+0.02*np.random.rand(N)
+	sinu  =(0.5+0.01*np.random.rand(N))*np.sin((2+0.005*np.random.rand(N))*np.pi*f*n/Fs)
+
 
 	signal = sinu #* sig.blackmanharris(N) #Blackman-Harris window !!!Amplitude issues!!!
 
@@ -124,9 +126,12 @@ if __name__ == '__main__':
 	
 	print "SINAD                : ",np.round(SINAD,1),"dBV"
 
-	if boolPlot & (("DISPLAY" in os.environ)|(platform.system() == 'WINDOWS')) :    #check if can dipslay
+	if boolPlot & (("DISPLAY" in os.environ)|(platform.system() == 'Windows')) :    #check if can dipslay
 		import matplotlib.pyplot as plt
-		plt.plot(fourier[0],fourier[1])
+		plt.subplot(211)        
+		plt.plot(n/Fs,sinu)
+		plt.subplot(212)
+		plt.plot(fourier[0],fourier[1],fourier[0],fourier[2])
 		plt.show()
 
 #--------------------------------------EOF--------------------------------------

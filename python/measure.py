@@ -30,7 +30,11 @@ def init():
 
 	OUTPUT :
 	PIN : array-like
+<<<<<<< HEAD
 		dict of hardware element
+=======
+		list of hardware element
+>>>>>>> 5c94bfc532f623a60e9bd94a1991a60dc36bfc1f
 
 	Init the Hardware
 	"""
@@ -82,7 +86,11 @@ def measure(f, n=0,boolPlot=0):
 	order = min(max(n+2,2),6)
 	
 	Fs = pin['adc'].Fs
+<<<<<<< HEAD
 	df = 100 #Hz precision (maximum supported : 10Hz)
+=======
+	df = 10 #Hz precision (maximum supported : 10Hz)
+>>>>>>> 5c94bfc532f623a60e9bd94a1991a60dc36bfc1f
 	N = np.ceil(Fs/df) #number of samples
 	T =1.050/df #take 5% more samples than needed to avoid transient response
 
@@ -139,8 +147,14 @@ def readDC(ADC):
 if __name__ == '__main__':
 	
 	f = 1000
+<<<<<<< HEAD
 	n=2
        
 	measure(f,n,1)
+=======
+	n=3
+       
+	measure(f,n)
+>>>>>>> 5c94bfc532f623a60e9bd94a1991a60dc36bfc1f
 	print	
 #--------------------------------------EOF--------------------------------------

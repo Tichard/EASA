@@ -17,8 +17,11 @@
 import numpy.fft as ft
 import numpy as np
 
-def analyze(signal, Fs, fgen, order):
+def analyze(signal, Fs, order):
 	"""
+
+	Analyze a signal, returning its FFT, Harmonic coeffs, THD and SINAD
+
 	INPUTS :
 	signal : array_like
 		input signal to analyse
@@ -30,6 +33,20 @@ def analyze(signal, Fs, fgen, order):
 		number of harmonics (fundamental incl.) wanted
 		
 	OUPUTS :
+	fgen : integer
+		fundamental		
+
+	Fourier : array-like
+		Frequency and FFT array of the input signal
+
+	H : array-like
+		Harmonic coefficients
+
+	THD : float
+		THD+N of the signal
+
+	SINAD : float
+		SINAD of the signal
 	
 	"""
 
@@ -40,12 +57,10 @@ def analyze(signal, Fs, fgen, order):
 	Sc = abs(ft.fft(signal)/N) #fft in complex domain
 	S = 2*Sc[:N/2] #fft in real domain
 
-	H = []
-	for o in range(1,order):  #for all harmonics
-		index = np.ceil(o*fgen*N/Fs) #index of the frequency
-		if index+1 < N/2:
-			H.append(max(S[index:index+1]))
-		else: H.append(0)
+	LF = int(50*N/Fs) #50Hz
+	S[:LF] = 0 #excluding potentialy VLF and DC bin > 50Hz
+
+	fgen = 1000 #Fsin(S,Fs) 
 
 	# parasite signal created by the system (harmonics + noise)
 	HN = np.array(S[:])
@@ -57,12 +72,20 @@ def analyze(signal, Fs, fgen, order):
 	
 	F = np.array(S[:]-HN[:]) #isolating the fundamental bin
 	
-	HN[:2*bw] = 0 #excluding potentialy VLF and DC bin
 
 	fourier = [[],[],[]]
 	fourier[0] = f
-	fourier[1] = F
+	fourier[1] = S
 	fourier[2] = HN
+
+	H = []
+	for o in range(1,order):  #for all harmonics
+		index = np.ceil(o*fgen*N/Fs) #index of the frequency
+		if index+1 < N/2:
+			H.append(max(S[index:index+1]))
+
+		else: H.append(0)
+
 
 	# Choose the THD wanted :
 	#THD = 100*sqrt(sum(H(2:order).^2))/H(1) #THD_F !!OBSOLETE!!
@@ -71,8 +94,38 @@ def analyze(signal, Fs, fgen, order):
 
 	SINAD = 20*np.log10(rms(F)/rms(HN)) #SINAD to dBV
 
-	return (fourier, H, THD, SINAD)
+	return (fgen, fourier, H, THD, SINAD)
 
+
+def Fsin(Fourier, Fs):
+
+	"""
+	
+	Return the fundamental frequency of the input FFT
+
+	INPUT:
+	Fourier : array-like
+		FFT of a signal to find the fundamental
+	Fs : integer
+		sampling rate
+	OUTPUT:
+	f : integer
+		fundamental
+
+	"""
+	N = len(Fourier) #number of samples
+
+	peak = []
+	for i in range(N):
+		if Fourier[i] > 0.00015:  #assuming that a bin above <threshold> is part of the input signal
+			peak.append(i)
+			print Fourier[i], "ok", i*Fs/(2*N)
+
+
+	f = peak[0]*Fs/(2*N)  #First harmonic is the fundamental
+
+	print f
+	return np.round(f,1)
 
 def rms(S):
 	"""
@@ -106,21 +159,21 @@ if __name__ == '__main__':
 	N = np.ceil(Fs/df) #number of samples
 	
 	n = np.arange(N)
-	f = 1000
+	f0 = 1000
 	h = 2
 	order = min(max(h+2,2),6)
 
-	sinu  =(0.5+0.01*np.random.rand(N))*np.sin((2+0.005*np.random.rand(N))*np.pi*f*n/Fs)
-
+	sinu  =(0.5+0.01*np.random.rand(N))*np.sin((2+0.005*np.random.rand(N))*np.pi*f0*n/Fs)
+	#sinu = np.sin(2*np.pi*f0*n/Fs)
 
 	signal = sinu #* sig.blackmanharris(N) #Blackman-Harris window !!!Amplitude issues!!!
 
-	(fourier, H, THD, SINAD) = analyze(signal, Fs, f, order)
+	(f, fourier, H, THD, SINAD) = analyze(signal, Fs, order)
 
 	print "Fundamental (",f,"Hz): ",np.round(20*np.log10(H[0]),2),"dBV"
 
 	for i in range(1,order-1):
-		print "Harmonic ",i,"(",(i+1)*f,"Hz):",np.round(20*np.log10(H[i]),2),"dB"
+		print "Harmonic ",i,"(",(i+1)*f,"Hz):",np.round(20*np.log10(H[i]),2),"dBV"
 
 	print "THD+N                : ",np.round(THD,3),"%"
 	

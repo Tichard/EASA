@@ -1,3 +1,4 @@
+
 #----------------------------------MEASURE.PY-----------------------------------
 # -*- coding: utf-8 -*-
 
@@ -26,13 +27,14 @@ from FT4222Programmer.adc088s022 import ADC088S022
 
 def init():
 	"""
+	Init the Hardware
+
 	INPUT:
 
 	OUTPUT :
 	PIN : array-like
 		dict of hardware element
 
-	Init the Hardware
 	"""
 	
 	devices = ft4222.FT4222.enumerateDevices()
@@ -61,8 +63,10 @@ def init():
 	return PIN
 
 
-def measure(f, n=0,boolPlot=0):
+def measure(n=1,boolPlot=0):
 	"""
+	measure a signal, call the analyse function and display the results
+
 	INPUTS :
 	f : integer
 		frequency to measure
@@ -78,7 +82,6 @@ def measure(f, n=0,boolPlot=0):
 
         pin = init()
 		
-	f = min(max(f,10),30000)
 	order = min(max(n+2,2),6)
 	
 	Fs = pin['adc'].Fs
@@ -93,7 +96,7 @@ def measure(f, n=0,boolPlot=0):
 		
 	#windowing or not the response signal
 	signal = data[end-nb:end] #* sig.blackmanharris(N) #Blackman-Harris window !!!Amplitude issues!!!
-	(fourier, H, THD, SINAD) = fct.analyze(signal, Fs, f, order)
+	(f, fourier, H, THD, SINAD) = fct.analyze(signal, Fs, order)
 
 	print "Fundamental (",f,"Hz): ",np.round(20*np.log10(H[0]),3),"dBV"
 
@@ -110,11 +113,16 @@ def measure(f, n=0,boolPlot=0):
 
 	#gpio.set(pin['power'], False) #power off !! gpio nonexistant in this scope
 		
-	return 1
+	return fourier[1]
 
 def readVoltage(ADC,T):
 	"""
+	Read the AC on the ADC pin
+
 	INPUTS :
+	ADC : object
+		selected adc
+
 	T : float
 		reading time (nb of samples wanted / Fs)
 		
@@ -127,19 +135,32 @@ def readVoltage(ADC,T):
 	return data
 
 def readDC(ADC):
+	"""
+	Read the DC on the ADC pin
+
+	INPUTS:
+	ADC : object
+		selected ADC
+
+	OUTPUTS:
+	v : float
+		voltage read on the pin
+
+	"""
+
 	data = np.array(ADC.read( ADC088S022.CHANNEL_2, 0.001 ))
+	
 	end = int(len(data))
 	v = np.mean(data[end-100:end]) #mean of the 100 last samples
-	print v
+	
 	return v	
 
 #-------------------------------MODULE TEST ZONE--------------------------------
 
 if __name__ == '__main__':
 	
-	f = 1000
 	n=2
        
-	measure(f,n,1)
-	print	
+	measure(n)
+
 #--------------------------------------EOF--------------------------------------

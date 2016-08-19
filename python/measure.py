@@ -1,4 +1,3 @@
-
 #----------------------------------MEASURE.PY-----------------------------------
 # -*- coding: utf-8 -*-
 
@@ -113,7 +112,7 @@ def measure(n=1,boolPlot=0):
 
 	#gpio.set(pin['power'], False) #power off !! gpio nonexistant in this scope
 		
-	return fourier[1]
+	return 1
 
 def readVoltage(ADC,T):
 	"""
@@ -161,6 +160,6 @@ if __name__ == '__main__':
 	
 	n=2
        
-	measure(n)
+	measure(n,1)
 
 #--------------------------------------EOF--------------------------------------

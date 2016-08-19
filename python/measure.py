@@ -75,8 +75,7 @@ def measure(n=1,boolPlot=0):
 		plot the fft
 		
 	OUPUTS :
-	return : integer
-		return 1 if the function has been fully executed       
+	       
 	"""
 
         pin = init()
@@ -84,7 +83,7 @@ def measure(n=1,boolPlot=0):
 	order = min(max(n+2,2),6)
 	
 	Fs = pin['adc'].Fs
-	df = 5 #Hz precision (maximum supported : 2Hz)
+	df = 10 #Hz precision (maximum supported : 2Hz)
 	N = np.ceil(Fs/df) #number of samples
 	T =1.050/df #take 5% more samples than needed to avoid transient response
 
@@ -112,7 +111,7 @@ def measure(n=1,boolPlot=0):
 
 	#gpio.set(pin['power'], False) #power off !! gpio nonexistant in this scope
 		
-	return 1
+	return data #DEBUG : return signal values
 
 def readVoltage(ADC,T):
 	"""

@@ -50,7 +50,7 @@ endfunction
 
 function v = rms(S)
 	%computes the RMS in real frequency domain
-	 v = sqrt(sum(S.^2)/2);
+	 v = sqrt(sum(S.^2)/length(S));
 endfunction
 
 %--------------------------------------EOF--------------------------------------
